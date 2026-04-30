@@ -1,0 +1,44 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Job {
+  id         String    @id @default(cuid())
+  type       JobType
+  status     JobStatus @default(PENDING)
+  inputFiles String[]
+  outputFile String?
+  options    Json?
+  errorMsg   String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  expiresAt  DateTime
+}
+
+enum JobType {
+  MERGE
+  SPLIT
+  REORDER
+  COMPRESS
+  UNLOCK
+  PROTECT
+  ROTATE
+  EXTRACT
+  PDF_TO_IMAGE
+  WATERMARK
+  PAGE_NUMBERS
+  METADATA
+  EDIT
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
