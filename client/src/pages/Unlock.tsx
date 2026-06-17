@@ -5,6 +5,7 @@ import { UploadZone } from '../components/pdf/UploadZone';
 import { FileCard } from '../components/pdf/FileCard';
 import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
 
@@ -63,27 +64,23 @@ export function Unlock() {
           )}
 
           <div className="mt-5">
-            <label className="block text-xs uppercase tracking-widest text-[var(--text-3)] mb-1.5">
-              PDF Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter the PDF password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                aria-label="PDF Password"
-                className="w-full bg-[var(--bg)] rounded-lg px-4 py-3 pr-10 text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none transition-colors border border-[var(--border)] focus:border-[var(--accent)]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            <Input
+              label="PDF Password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter the PDF password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+              trailingIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+            />
           </div>
 
           {uploadError && <p className="mt-3 font-mono text-sm text-[#EF4444]">{uploadError}</p>}
