@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { UploadZone } from '../components/pdf/UploadZone';
+import { FileCard } from '../components/pdf/FileCard';
+import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi, type SplitMode } from '../services/api';
 
@@ -22,10 +25,6 @@ export function Split() {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { job } = useJobPolling(jobId);
-
-  const isProcessing = job?.status === 'PENDING' || job?.status === 'PROCESSING';
-  const isDone = job?.status === 'DONE';
-  const isFailed = job?.status === 'FAILED';
 
   const isZip = mode === 'RANGES' || mode === 'EVERY_N';
   const downloadLabel = isZip ? 'Download ZIP' : 'Download PDF';
@@ -76,150 +75,75 @@ export function Split() {
           {!file ? (
             <UploadZone onFiles={(f) => setFile(f[0])} />
           ) : (
-            <div className="flex items-center justify-between px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm">
-              <span className="text-gray-700 truncate">{file.name}</span>
-              <button
-                onClick={() => setFile(null)}
-                className="ml-3 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <FileCard
+              name={file.name}
+              meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+              onRemove={() => setFile(null)}
+            />
           )}
 
-          <div className="mt-6">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Split mode</p>
-            <div className="space-y-2">
+          <div className="mt-8">
+            <p className="text-xs uppercase tracking-widest text-[var(--text-3)] mb-3">Split mode</p>
+            <div className="space-y-3">
               {MODES.map((m) => (
-                <label
-                  key={m.id}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    mode === m.id
-                      ? 'border-indigo-300 bg-indigo-50/50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
+                <label key={m.id}
+                  className={
+                    'flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ' +
+                    (mode === m.id
+                      ? 'border-[var(--accent)] bg-[var(--accent-05)]'
+                      : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent-40)]')
+                  }
+                  style={{ borderLeft: '3px solid var(--accent)' }}
                 >
-                  <input
-                    type="radio"
-                    name="mode"
-                    value={m.id}
-                    checked={mode === m.id}
-                    onChange={() => setMode(m.id)}
-                    className="mt-0.5 accent-indigo-600"
-                  />
+                  <input type="radio" name="mode" value={m.id} checked={mode === m.id}
+                    onChange={() => setMode(m.id)} className="mt-1 accent-[var(--accent)]" />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{m.label}</p>
-                    <p className="text-xs text-gray-500">{m.description}</p>
+                    <p className="font-syne font-bold text-[var(--text-1)]">{m.label}</p>
+                    <p className="text-sm text-[var(--text-2)]">{m.description}</p>
                   </div>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-6">
             {mode === 'EXTRACT' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Page numbers
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 1, 3, 5-7, 10"
-                  value={pages}
-                  onChange={(e) => setPages(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-                <p className="mt-1 text-xs text-gray-400">Separate with commas. Use hyphens for ranges.</p>
-              </div>
+              <Input label="Page numbers" placeholder="e.g. 1, 3, 5-7, 10"
+                value={pages} onChange={(e) => setPages(e.target.value)}
+                hint="Separate with commas. Use hyphens for ranges." />
             )}
-
             {mode === 'RANGES' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Ranges (one PDF per range)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 1-5, 6-10, 11-15"
-                  value={ranges}
-                  onChange={(e) => setRanges(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-                <p className="mt-1 text-xs text-gray-400">Each range becomes a separate PDF inside the ZIP.</p>
-              </div>
+              <Input label="Ranges (one PDF per range)" placeholder="e.g. 1-5, 6-10, 11-15"
+                value={ranges} onChange={(e) => setRanges(e.target.value)}
+                hint="Each range becomes a separate PDF inside the ZIP." />
             )}
-
             {mode === 'EVERY_N' && (
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Pages per chunk
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={n}
-                  onChange={(e) => setN(e.target.value)}
-                  className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-                <p className="mt-1 text-xs text-gray-400">Each chunk of this many pages becomes a PDF in the ZIP.</p>
-              </div>
+              <Input label="Pages per chunk" type="number" min={1} className="w-40"
+                value={n} onChange={(e) => setN(e.target.value)}
+                hint="Each chunk of this many pages becomes a PDF in the ZIP." />
             )}
           </div>
 
-          {uploadError && <p className="mt-3 text-sm text-red-500">{uploadError}</p>}
+          {uploadError && <p className="mt-3 font-mono text-sm text-[#EF4444]">{uploadError}</p>}
 
-          <div className="mt-6 flex gap-3">
-            <Button onClick={handleSplit} disabled={!canSubmit()} loading={uploading}>
-              Split PDF
-            </Button>
+          <div className="mt-8 flex gap-3">
+            <Button onClick={handleSplit} disabled={!canSubmit()} loading={uploading}>Split PDF</Button>
             {file && <Button variant="ghost" onClick={reset}>Clear</Button>}
           </div>
         </>
       )}
 
-      {jobId && (
-        <div className="flex flex-col items-center gap-4 py-10 text-center">
-          {isProcessing && (
-            <>
-              <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
-              <p className="text-sm text-gray-500">Splitting your PDF…</p>
-            </>
-          )}
-
-          {isDone && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-gray-900">Your file is ready!</p>
-              <div className="flex gap-3">
-                <a href={jobsApi.downloadUrl(jobId)}>
-                  <Button>{downloadLabel}</Button>
-                </a>
-                <Button variant="ghost" onClick={reset}>Split another</Button>
-              </div>
-            </>
-          )}
-
-          {isFailed && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <p className="text-sm text-red-500">{job?.errorMsg ?? 'Something went wrong.'}</p>
-              <Button variant="ghost" onClick={reset}>Try again</Button>
-            </>
-          )}
-        </div>
+      {jobId && job && (
+        <ResultPanel
+          status={job.status}
+          processingLabel="Splitting your PDF…"
+          doneLabel="Your file is ready!"
+          downloadUrl={jobsApi.downloadUrl(jobId)}
+          downloadLabel={downloadLabel}
+          resetLabel="Split another"
+          onReset={reset}
+          errorMsg={job.errorMsg}
+        />
       )}
     </PageWrapper>
   );
