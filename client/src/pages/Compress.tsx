@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { UploadZone } from '../components/pdf/UploadZone';
+import { FileCard } from '../components/pdf/FileCard';
+import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
@@ -27,10 +30,6 @@ export function Compress() {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { job } = useJobPolling(jobId);
-
-  const isProcessing = job?.status === 'PENDING' || job?.status === 'PROCESSING';
-  const isDone = job?.status === 'DONE';
-  const isFailed = job?.status === 'FAILED';
 
   const meta = job?.options as Record<string, number> | null;
 
@@ -64,33 +63,26 @@ export function Compress() {
           {!file ? (
             <UploadZone onFiles={(f) => setFile(f[0])} />
           ) : (
-            <div className="flex items-center justify-between px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm">
-              <div>
-                <span className="text-gray-700 font-medium truncate block">{file.name}</span>
-                <span className="text-gray-400 text-xs">{formatBytes(file.size)}</span>
-              </div>
-              <button
-                onClick={() => setFile(null)}
-                className="ml-3 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <FileCard
+              name={file.name}
+              meta={formatBytes(file.size)}
+              onRemove={() => setFile(null)}
+            />
           )}
 
-          <div className="mt-6">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Quality preset</p>
-            <div className="space-y-2">
+          <div className="mt-8">
+            <p className="text-xs uppercase tracking-widest text-[var(--text-3)] mb-3">Quality preset</p>
+            <div className="space-y-3">
               {QUALITY_OPTIONS.map((opt) => (
                 <label
                   key={opt.id}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    quality === opt.id
-                      ? 'border-indigo-300 bg-indigo-50/50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
+                  className={
+                    'flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ' +
+                    (quality === opt.id
+                      ? 'border-[var(--accent)] bg-[var(--accent-05)]'
+                      : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent-40)]')
+                  }
+                  style={{ borderLeft: '3px solid var(--accent)' }}
                 >
                   <input
                     type="radio"
@@ -98,29 +90,29 @@ export function Compress() {
                     value={opt.id}
                     checked={quality === opt.id}
                     onChange={() => setQuality(opt.id)}
-                    className="mt-0.5 accent-indigo-600"
+                    className="mt-1 accent-[var(--accent)]"
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-800">{opt.label}</p>
+                      <p className="font-syne font-bold text-[var(--text-1)]">{opt.label}</p>
                       <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                         opt.id === 'medium'
-                          ? 'bg-indigo-100 text-indigo-600'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-[var(--accent-05)] text-[var(--accent)]'
+                          : 'bg-[var(--bg)] text-[var(--text-3)]'
                       }`}>
                         {opt.tag}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+                    <p className="text-sm text-[var(--text-2)] mt-0.5">{opt.description}</p>
                   </div>
                 </label>
               ))}
             </div>
           </div>
 
-          {uploadError && <p className="mt-3 text-sm text-red-500">{uploadError}</p>}
+          {uploadError && <p className="mt-3 font-mono text-sm text-[#EF4444]">{uploadError}</p>}
 
-          <div className="mt-6">
+          <div className="mt-8">
             <Button onClick={handleCompress} disabled={!file} loading={uploading}>
               Compress PDF
             </Button>
@@ -128,71 +120,55 @@ export function Compress() {
         </>
       )}
 
-      {jobId && (
-        <div className="flex flex-col items-center gap-4 py-10 text-center">
-          {isProcessing && (
-            <>
-              <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
-              <p className="text-sm text-gray-500">Compressing your PDF…</p>
-            </>
+      {jobId && job && job.status !== 'DONE' && (
+        <ResultPanel
+          status={job.status}
+          processingLabel="Compressing your PDF…"
+          doneLabel="Your file is ready!"
+          downloadUrl={jobsApi.downloadUrl(jobId)}
+          downloadLabel="Download PDF"
+          resetLabel="Compress another"
+          onReset={reset}
+          errorMsg={job.errorMsg}
+        />
+      )}
+
+      {jobId && job && job.status === 'DONE' && (
+        <div className="flex flex-col items-center gap-5 py-16 text-center">
+          <CheckCircle2 className="w-12 h-12 text-[#22C55E]" aria-hidden />
+          <p className="font-syne font-bold text-xl text-[var(--text-1)]">Your file is ready!</p>
+
+          {meta?.originalSize && meta?.compressedSize && (
+            <div className="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-6 py-4 text-sm space-y-2 w-full max-w-xs font-mono">
+              <div className="flex justify-between text-[var(--text-3)]">
+                <span>Original</span>
+                <span className="text-[var(--text-2)]">{formatBytes(meta.originalSize)}</span>
+              </div>
+              <div className="flex justify-between text-[var(--text-3)]">
+                <span>Compressed</span>
+                <span className="text-[var(--text-2)]">{formatBytes(meta.compressedSize)}</span>
+              </div>
+              <div className="border-t border-[var(--border)] pt-2 flex justify-between">
+                <span className="text-[var(--text-3)]">Saved</span>
+                <span className="font-bold text-[#22C55E]">
+                  {formatBytes(meta.savedBytes)} ({meta.savedPercent}%)
+                </span>
+              </div>
+            </div>
           )}
 
-          {isDone && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-
-              {meta?.originalSize && meta?.compressedSize && (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl px-6 py-4 text-sm space-y-2 w-full max-w-xs">
-                  <div className="flex justify-between text-gray-500">
-                    <span>Original</span>
-                    <span className="font-medium text-gray-700">{formatBytes(meta.originalSize)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-500">
-                    <span>Compressed</span>
-                    <span className="font-medium text-gray-700">{formatBytes(meta.compressedSize)}</span>
-                  </div>
-                  <div className="border-t border-gray-200 pt-2 flex justify-between">
-                    <span className="text-gray-500">Saved</span>
-                    <span className="font-semibold text-emerald-600">
-                      {formatBytes(meta.savedBytes)} ({meta.savedPercent}%)
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {meta?.savedPercent !== undefined && meta.savedPercent <= 0 && (
-                <p className="text-xs text-gray-400 max-w-xs">
-                  The file couldn't be compressed further at this quality level — it may already be optimised.
-                </p>
-              )}
-
-              <div className="flex gap-3">
-                <a href={jobsApi.downloadUrl(jobId)}>
-                  <Button>Download PDF</Button>
-                </a>
-                <Button variant="ghost" onClick={reset}>Compress another</Button>
-              </div>
-            </>
+          {meta?.savedPercent !== undefined && meta.savedPercent <= 0 && (
+            <p className="font-mono text-xs text-[var(--text-4)] max-w-xs">
+              The file couldn't be compressed further at this quality level — it may already be optimised.
+            </p>
           )}
 
-          {isFailed && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <p className="text-sm text-red-500">{job?.errorMsg ?? 'Something went wrong.'}</p>
-              <Button variant="ghost" onClick={reset}>Try again</Button>
-            </>
-          )}
+          <div className="flex gap-3">
+            <a href={jobsApi.downloadUrl(jobId)}>
+              <Button>Download PDF</Button>
+            </a>
+            <Button variant="ghost" onClick={reset}>Compress another</Button>
+          </div>
         </div>
       )}
     </PageWrapper>
