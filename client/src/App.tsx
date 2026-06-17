@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
 import { Merge } from './pages/Merge';
 import { Split } from './pages/Split';
@@ -18,24 +19,27 @@ import { EditPdf } from './pages/EditPdf';
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#fafafa]">
+      <div className="min-h-screen bg-[var(--bg)] flex flex-col">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/merge" element={<Merge />} />
-          <Route path="/split" element={<Split />} />
-          <Route path="/reorder" element={<Reorder />} />
-          <Route path="/compress" element={<Compress />} />
-          <Route path="/unlock" element={<Unlock />} />
-          <Route path="/protect" element={<Protect />} />
-          <Route path="/rotate" element={<Rotate />} />
-          <Route path="/extract" element={<Extract />} />
-          <Route path="/to-images" element={<PdfToImages />} />
-          <Route path="/watermark" element={<Watermark />} />
-          <Route path="/page-numbers" element={<PageNumbers />} />
-          <Route path="/metadata" element={<Metadata />} />
-          <Route path="/edit" element={<EditPdf />} />
-        </Routes>
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/merge" element={<Merge />} />
+            <Route path="/split" element={<Split />} />
+            <Route path="/reorder" element={<Reorder />} />
+            <Route path="/compress" element={<Compress />} />
+            <Route path="/unlock" element={<Unlock />} />
+            <Route path="/protect" element={<Protect />} />
+            <Route path="/rotate" element={<Rotate />} />
+            <Route path="/extract" element={<Extract />} />
+            <Route path="/to-images" element={<PdfToImages />} />
+            <Route path="/watermark" element={<Watermark />} />
+            <Route path="/page-numbers" element={<PageNumbers />} />
+            <Route path="/metadata" element={<Metadata />} />
+            <Route path="/edit" element={<EditPdf />} />
+          </Routes>
+        </div>
+        <Footer />
       </div>
     </BrowserRouter>
   );
