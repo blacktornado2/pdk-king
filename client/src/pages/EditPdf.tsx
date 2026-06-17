@@ -1,4 +1,5 @@
-import { useState, useEffect, CSSProperties } from 'react';
+import { useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
 import { PageWrapper } from '../components/layout/PageWrapper';
