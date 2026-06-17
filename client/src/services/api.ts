@@ -1,7 +1,11 @@
 import axios from 'axios';
 import type { Job } from '../types';
 
-const http = axios.create({ baseURL: '/api/v1' });
+// In dev, defaults to the relative path proxied by Vite (see vite.config.ts).
+// In prod, set VITE_API_URL to the deployed API base (e.g. https://api.example.com/api/v1).
+const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
+
+const http = axios.create({ baseURL: API_BASE });
 
 export type SplitMode = 'EXTRACT' | 'RANGES' | 'EVERY_N';
 
@@ -110,6 +114,6 @@ export const pdfApi = {
 
 export const jobsApi = {
   status: (id: string) => http.get<Job>(`/jobs/${id}`),
-  downloadUrl: (id: string) => `/api/v1/jobs/${id}/download`,
+  downloadUrl: (id: string) => `${API_BASE}/jobs/${id}/download`,
   delete: (id: string) => http.delete(`/jobs/${id}`),
 };

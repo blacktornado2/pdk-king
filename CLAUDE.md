@@ -6,8 +6,13 @@ A web app for PDF management (merge, split, reorder, unlock, compress, etc.), bu
 
 ## Monorepo Structure
 
+npm **workspaces** monorepo. The root `package.json` ties `client` and `server`
+together — run `npm install` **once at the root** (dependencies hoist to a single
+root `node_modules`), and `npm run dev` boots both apps together via `concurrently`.
+
 ```
 pdf-king/
+├── package.json  # Root — workspaces, runs both apps via concurrently
 ├── client/       # React 19 + Vite + TypeScript + TailwindCSS + React Router v7
 ├── server/       # NestJS + TypeScript + Prisma + BullMQ
 └── plan.md       # Full project plan with decisions and roadmap
@@ -18,6 +23,7 @@ pdf-king/
 | Layer | Choice | Notes |
 |-------|--------|-------|
 | Frontend | React 19 + Vite | NOT Next.js — SPA is sufficient, NestJS handles API |
+| Icons | lucide-react | Navbar + UI icons — tree-shaken |
 | Styling | TailwindCSS | Minimalistic, light-only (dark mode later) |
 | Routing | React Router v7 | |
 | State | Zustand | Lightweight, no Redux overhead |
@@ -113,15 +119,20 @@ model Job {
 10. Add Watermark
 11. Add Page Numbers
 12. PDF Metadata Editor
+13. Edit Text (`EDIT` job type)
 
 ## Dev Commands
 
 ```bash
-# Backend
-cd server && npm run start:dev
+# Install everything (from root — installs both workspaces)
+npm install
 
-# Frontend
-cd client && npm run dev
+# Run BOTH apps together (from root) — preferred
+npm run dev          # client (vite) + server (nest --watch), labeled logs
+
+# Run individually if needed
+npm run dev:client   # or: cd client && npm run dev
+npm run dev:server   # or: cd server && npm run start:dev
 
 # DB migrations
 cd server && npx prisma migrate dev
@@ -130,6 +141,8 @@ cd server && npx prisma migrate dev
 cd server && npx prisma studio
 ```
 
+> The server still needs **Postgres + Redis** running, or it errors on connect.
+
 ## Key Conventions
 
 - StorageService is always the abstraction layer for file I/O — never call `fs` directly in processors
@@ -137,3 +150,10 @@ cd server && npx prisma studio
 - Frontend pages live in `client/src/pages/`, one file per tool
 - Job polling interval: 1500ms, stop on DONE or FAILED
 - Temp files expire after 1 hour — a cleanup cron job handles deletion
+- `react` and `react-dom` are **pinned to the exact same version** (no caret) in
+  `client/package.json` — workspace hoisting can otherwise split them and crash
+  the app with an "Incompatible React versions" error. Bump both together.
+- After adding a Prisma schema change, run `npx prisma generate` (stale client →
+  `Property 'X' does not exist on type` TS errors).
+- After installing a new client dependency, restart Vite (or `vite --force`) to
+  rebuild its optimize-deps cache — otherwise: `504 Outdated Optimize Dep`.
