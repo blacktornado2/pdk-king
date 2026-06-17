@@ -16,6 +16,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { UploadZone } from '../components/pdf/UploadZone';
 import { SortablePageCard } from '../components/pdf/SortablePageCard';
 import { Button } from '../components/ui/Button';
+import { ResultPanel } from '../components/pdf/ResultPanel';
 import { usePdfThumbnails } from '../hooks/usePdfThumbnails';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
@@ -30,10 +31,6 @@ export function Reorder() {
 
   const { thumbnails, pageCount, loading, error: thumbError } = usePdfThumbnails(file);
   const { job } = useJobPolling(jobId);
-
-  const isProcessing = job?.status === 'PENDING' || job?.status === 'PROCESSING';
-  const isDone = job?.status === 'DONE';
-  const isFailed = job?.status === 'FAILED';
 
   // Initialise order once thumbnails are ready
   if (thumbnails.length > 0 && order.length !== thumbnails.length) {
@@ -88,26 +85,21 @@ export function Reorder() {
 
           {file && loading && (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <svg className="animate-spin h-7 w-7 text-indigo-400" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
-              <p className="text-sm text-gray-400">Generating page previews…</p>
+              <span className="border-2 border-[var(--border)] border-t-[var(--accent)] rounded-full w-7 h-7 animate-spin" />
+              <p className="font-mono text-[11px] text-[var(--text-3)]">Generating page previews…</p>
             </div>
           )}
 
           {thumbError && (
-            <p className="text-sm text-red-500 mt-4">{thumbError}</p>
+            <p className="font-mono text-sm text-[#EF4444] mt-4">{thumbError}</p>
           )}
 
           {thumbnails.length > 0 && !loading && (
             <>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-gray-400">{pageCount} pages · drag to reorder</p>
-                <button
-                  onClick={() => setOrder(Array.from({ length: pageCount }, (_, i) => i))}
-                  className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-                >
+                <p className="font-mono text-[11px] text-[var(--text-3)]">{pageCount} pages · drag to reorder</p>
+                <button onClick={() => setOrder(Array.from({ length: pageCount }, (_, i) => i))}
+                  className="text-xs uppercase tracking-widest text-[var(--text-3)] hover:text-[var(--accent)] transition-colors">
                   Reset order
                 </button>
               </div>
@@ -134,67 +126,30 @@ export function Reorder() {
                 </SortableContext>
               </DndContext>
 
-              {uploadError && <p className="mt-3 text-sm text-red-500">{uploadError}</p>}
-
-              <div className="mt-6 flex gap-3">
-                <Button
-                  onClick={handleApply}
-                  disabled={isDefaultOrder}
-                  loading={uploading}
-                >
-                  Apply new order
-                </Button>
+              {uploadError && <p className="mt-3 font-mono text-sm text-[#EF4444]">{uploadError}</p>}
+              <div className="mt-8 flex gap-3">
+                <Button onClick={handleApply} disabled={isDefaultOrder} loading={uploading}>Apply new order</Button>
                 <Button variant="ghost" onClick={reset}>Cancel</Button>
               </div>
               {isDefaultOrder && (
-                <p className="mt-2 text-xs text-gray-400">Move at least one page to enable apply.</p>
+                <p className="mt-3 font-mono text-[11px] text-[var(--text-4)]">Move at least one page to enable apply.</p>
               )}
             </>
           )}
         </>
       )}
 
-      {jobId && (
-        <div className="flex flex-col items-center gap-4 py-10 text-center">
-          {isProcessing && (
-            <>
-              <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
-              <p className="text-sm text-gray-500">Applying new page order…</p>
-            </>
-          )}
-
-          {isDone && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-gray-900">Your reordered PDF is ready!</p>
-              <div className="flex gap-3">
-                <a href={jobsApi.downloadUrl(jobId)}>
-                  <Button>Download PDF</Button>
-                </a>
-                <Button variant="ghost" onClick={reset}>Reorder another</Button>
-              </div>
-            </>
-          )}
-
-          {isFailed && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <p className="text-sm text-red-500">{job?.errorMsg ?? 'Something went wrong.'}</p>
-              <Button variant="ghost" onClick={reset}>Try again</Button>
-            </>
-          )}
-        </div>
+      {jobId && job && (
+        <ResultPanel
+          status={job.status}
+          processingLabel="Applying new page order…"
+          doneLabel="Your reordered PDF is ready!"
+          downloadUrl={jobsApi.downloadUrl(jobId)}
+          downloadLabel="Download PDF"
+          resetLabel="Reorder another"
+          onReset={reset}
+          errorMsg={job.errorMsg}
+        />
       )}
     </PageWrapper>
   );

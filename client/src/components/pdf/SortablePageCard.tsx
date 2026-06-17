@@ -22,18 +22,13 @@ export function SortablePageCard({ id, thumbnail, pageLabel }: SortablePageCardP
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative bg-white border border-gray-200 rounded-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:border-indigo-300 hover:shadow-sm transition-all"
+      className="group relative bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden select-none cursor-grab active:cursor-grabbing hover:border-[var(--accent)] transition-colors"
       {...attributes}
       {...listeners}
     >
-      <img
-        src={thumbnail}
-        alt={`Page ${pageLabel}`}
-        className="w-full object-contain pointer-events-none"
-        draggable={false}
-      />
-      <div className="absolute bottom-0 inset-x-0 bg-white/90 py-1 text-center">
-        <span className="text-xs font-medium text-gray-500">{pageLabel}</span>
+      <img src={thumbnail} alt={`Page ${pageLabel}`} className="w-full object-contain pointer-events-none" draggable={false} />
+      <div className="absolute bottom-0 inset-x-0 bg-[var(--bg-95)] py-1 text-center">
+        <span className="font-mono text-[11px] text-[var(--text-2)]">{pageLabel}</span>
       </div>
     </div>
   );
