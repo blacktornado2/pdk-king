@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ProgressBar } from '../ui/ProgressBar';
@@ -13,10 +14,12 @@ interface ResultPanelProps {
   resetLabel: string;
   onReset: () => void;
   errorMsg?: string | null;
+  /** Extra content rendered between the done headline and the download/reset buttons. */
+  extra?: ReactNode;
 }
 
 export function ResultPanel({
-  status, processingLabel, doneLabel, downloadUrl, downloadLabel, resetLabel, onReset, errorMsg,
+  status, processingLabel, doneLabel, downloadUrl, downloadLabel, resetLabel, onReset, errorMsg, extra,
 }: ResultPanelProps) {
   const processing = status === 'PENDING' || status === 'PROCESSING';
   return (
@@ -27,6 +30,7 @@ export function ResultPanel({
         <>
           <CheckCircle2 className="w-12 h-12 text-[#22C55E]" aria-hidden />
           <p className="font-syne font-bold text-xl text-[var(--text-1)]">{doneLabel}</p>
+          {extra}
           <div className="flex gap-3">
             <a href={downloadUrl}><Button>{downloadLabel}</Button></a>
             <Button variant="ghost" onClick={onReset}>{resetLabel}</Button>

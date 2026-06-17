@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { UploadZone } from '../components/pdf/UploadZone';
 import { FileCard } from '../components/pdf/FileCard';
@@ -120,7 +119,7 @@ export function Compress() {
         </>
       )}
 
-      {jobId && job && job.status !== 'DONE' && (
+      {jobId && job && (
         <ResultPanel
           status={job.status}
           processingLabel="Compressing your PDF…"
@@ -130,46 +129,37 @@ export function Compress() {
           resetLabel="Compress another"
           onReset={reset}
           errorMsg={job.errorMsg}
+          extra={
+            job.status === 'DONE' ? (
+              <>
+                {meta?.originalSize && meta?.compressedSize && (
+                  <div className="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-6 py-4 text-sm space-y-2 w-full max-w-xs font-mono">
+                    <div className="flex justify-between text-[var(--text-3)]">
+                      <span>Original</span>
+                      <span className="text-[var(--text-2)]">{formatBytes(meta.originalSize)}</span>
+                    </div>
+                    <div className="flex justify-between text-[var(--text-3)]">
+                      <span>Compressed</span>
+                      <span className="text-[var(--text-2)]">{formatBytes(meta.compressedSize)}</span>
+                    </div>
+                    <div className="border-t border-[var(--border)] pt-2 flex justify-between">
+                      <span className="text-[var(--text-3)]">Saved</span>
+                      <span className="font-bold text-[#22C55E]">
+                        {formatBytes(meta.savedBytes)} ({meta.savedPercent}%)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {meta?.savedPercent !== undefined && meta.savedPercent <= 0 && (
+                  <p className="font-mono text-xs text-[var(--text-4)] max-w-xs">
+                    The file couldn't be compressed further at this quality level — it may already be optimised.
+                  </p>
+                )}
+              </>
+            ) : null
+          }
         />
-      )}
-
-      {jobId && job && job.status === 'DONE' && (
-        <div className="flex flex-col items-center gap-5 py-16 text-center">
-          <CheckCircle2 className="w-12 h-12 text-[#22C55E]" aria-hidden />
-          <p className="font-syne font-bold text-xl text-[var(--text-1)]">Your file is ready!</p>
-
-          {meta?.originalSize && meta?.compressedSize && (
-            <div className="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-6 py-4 text-sm space-y-2 w-full max-w-xs font-mono">
-              <div className="flex justify-between text-[var(--text-3)]">
-                <span>Original</span>
-                <span className="text-[var(--text-2)]">{formatBytes(meta.originalSize)}</span>
-              </div>
-              <div className="flex justify-between text-[var(--text-3)]">
-                <span>Compressed</span>
-                <span className="text-[var(--text-2)]">{formatBytes(meta.compressedSize)}</span>
-              </div>
-              <div className="border-t border-[var(--border)] pt-2 flex justify-between">
-                <span className="text-[var(--text-3)]">Saved</span>
-                <span className="font-bold text-[#22C55E]">
-                  {formatBytes(meta.savedBytes)} ({meta.savedPercent}%)
-                </span>
-              </div>
-            </div>
-          )}
-
-          {meta?.savedPercent !== undefined && meta.savedPercent <= 0 && (
-            <p className="font-mono text-xs text-[var(--text-4)] max-w-xs">
-              The file couldn't be compressed further at this quality level — it may already be optimised.
-            </p>
-          )}
-
-          <div className="flex gap-3">
-            <a href={jobsApi.downloadUrl(jobId)}>
-              <Button>Download PDF</Button>
-            </a>
-            <Button variant="ghost" onClick={reset}>Compress another</Button>
-          </div>
-        </div>
       )}
     </PageWrapper>
   );
