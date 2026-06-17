@@ -31,23 +31,47 @@ architecture, conventions, and design system.
 ## Prerequisites
 
 - **Node.js** 20+ (developed on v24)
-- **PostgreSQL** running locally
-- **Redis** running locally
-- CLI tools: `brew install qpdf ghostscript`
+- **PostgreSQL** 15+ installed and running locally
+- **Redis** installed and running locally
+- CLI tools: `qpdf`, `ghostscript`
+
+On macOS (Homebrew) you can install everything with:
+
+```bash
+brew install postgresql@15 redis qpdf ghostscript
+```
 
 ## Setup
 
 ```bash
-# 1. Install all dependencies (root install covers both workspaces)
+# 1. Start the data services (they don't auto-start after install)
+brew services start postgresql@15
+brew services start redis
+
+# 2. Create the application database
+createdb pdfking
+
+# 3. Install all dependencies (root install covers both workspaces)
 npm install
 
-# 2. Configure the server env, then run DB migrations
+# 4. Configure the server env, then run DB migrations
 cd server
-cp .env.example .env   # then edit DATABASE_URL, REDIS_HOST/PORT, etc.
+cp .env.example .env   # then edit DATABASE_URL to match your Postgres (see note below)
 npx prisma migrate dev
 npx prisma generate
 cd ..
 ```
+
+> **Heads-up on `DATABASE_URL`.** `.env.example` ships with
+> `postgresql://postgres:postgres@localhost:5432/pdfking`, but a stock Homebrew
+> Postgres has **no `postgres` role and no password** — it authenticates as your
+> macOS username. On such a setup use:
+>
+> ```
+> DATABASE_URL="postgresql://$(whoami)@localhost:5432/pdfking?schema=public"
+> ```
+>
+> (substitute your actual username, e.g. `postgresql://ankit@localhost:5432/pdfking?schema=public`).
 
 ## Running
 
@@ -88,7 +112,9 @@ cd server && npx prisma migrate dev # create/apply a migration
 
 | Symptom | Fix |
 |---|---|
+| `Module '@prisma/client' has no exported member 'PrismaClient'` on first `npm run dev` | The Prisma client wasn't generated yet. Run `cd server && npx prisma generate`, then restart `npm run dev` |
 | `Property 'X' does not exist on type` after a schema change | `cd server && npx prisma generate` |
+| Server exits with a connection error on boot | Postgres/Redis aren't running — `brew services start postgresql@15 && brew services start redis` |
 | `504 Outdated Optimize Dep` after adding a client dependency | restart Vite (or `npm run dev:client -- --force`) |
 | `Incompatible React versions` | `react` and `react-dom` must be the exact same version in `client/package.json` |
 
