@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import {
   Combine,
   Scissors,
@@ -34,29 +35,46 @@ const tools: { path: string; label: string; icon: LucideIcon }[] = [
 
 export function Navbar() {
   const { pathname } = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <Link to="/" className="font-semibold text-gray-900 text-lg tracking-tight">
-          PDF King
+    <header
+      className={
+        'fixed top-0 left-0 w-full z-50 transition-all duration-300 ' +
+        (scrolled
+          ? 'bg-[var(--bg-95)] backdrop-blur-sm border-b border-[var(--border)]'
+          : 'bg-transparent')
+      }
+    >
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
+        <Link to="/" className="font-syne font-bold text-lg text-[var(--text-1)] hover:text-[var(--accent)] transition-colors">
+          PDF <span className="text-[var(--accent)]">King</span>
         </Link>
         <nav className="flex items-center gap-1">
           {tools.map((t) => {
             const Icon = t.icon;
+            const active = pathname === t.path;
             return (
               <Link
                 key={t.path}
                 to={t.path}
                 title={t.label}
                 aria-label={t.label}
-                className={`p-2 rounded-md transition-colors ${
-                  pathname === t.path
-                    ? 'bg-indigo-50 text-indigo-600'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                className={
+                  'p-2 rounded-md transition-colors ' +
+                  (active
+                    ? 'text-[var(--accent)] bg-[var(--accent-10)]'
+                    : 'text-[var(--text-3)] hover:text-[var(--text-1)] hover:bg-[var(--surface)]')
+                }
               >
-                <Icon size={18} strokeWidth={2} />
+                <Icon size={18} strokeWidth={2} aria-hidden />
               </Link>
             );
           })}
