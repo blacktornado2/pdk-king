@@ -24,7 +24,7 @@ pdf-king/
 |-------|--------|-------|
 | Frontend | React 19 + Vite | NOT Next.js — SPA is sufficient, NestJS handles API |
 | Icons | lucide-react | Navbar + UI icons — tree-shaken |
-| Styling | TailwindCSS | Minimalistic, light-only (dark mode later) |
+| Styling | TailwindCSS v4 + framer-motion | Dark-first "Dark Refined" theme, runtime light/dark + 6-accent switching |
 | Routing | React Router v7 | |
 | State | Zustand | Lightweight, no Redux overhead |
 | HTTP client | Axios | |
@@ -94,16 +94,11 @@ model Job {
 
 ## Design System
 
-- **Font**: Inter (Google Fonts)
-- **Background**: `#FAFAFA`
-- **Surface/Card**: `#FFFFFF`
-- **Border**: `#E5E7EB`
-- **Text primary**: `#111827`
-- **Text secondary**: `#6B7280`
-- **Accent**: `#4F46E5` (Indigo) — buttons, active states
-- **Accent hover**: `#4338CA`
-- **Success**: `#10B981` | **Error**: `#EF4444` | **Warning**: `#F59E0B`
-- Style: minimalistic, whitespace-heavy, subtle borders — no heavy shadows or gradients
+The single source of truth is [`pdf-king-design-system.md`](pdf-king-design-system.md)
+("Dark Refined"): dark-first canvas, single switchable accent (crimson default),
+Syne / DM Sans / JetBrains Mono, the card recipe (surface + 3px accent left-border +
+hover glow), framer-motion. Tokens are runtime CSS vars in `client/src/index.css`,
+switched via `data-mode` / `data-theme` on `<html>` by `client/src/theme/ThemeContext`.
 
 ## Feature Build Order
 

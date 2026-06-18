@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { DragEvent, ChangeEvent } from 'react';
+import { UploadCloud } from 'lucide-react';
 
 interface UploadZoneProps {
   multiple?: boolean;
@@ -9,12 +10,12 @@ interface UploadZoneProps {
 
 export function UploadZone({ multiple = false, onFiles, label }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(
-      (f) => f.type === 'application/pdf',
-    );
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter((f) => f.type === 'application/pdf');
     if (files.length) onFiles(files);
   };
 
@@ -24,32 +25,39 @@ export function UploadZone({ multiple = false, onFiles, label }: UploadZoneProps
     e.target.value = '';
   };
 
+  const open = () => inputRef.current?.click();
+
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label="Upload PDF"
       onDrop={handleDrop}
-      onDragOver={(e) => e.preventDefault()}
-      onClick={() => inputRef.current?.click()}
-      className="group border-2 border-dashed border-gray-200 rounded-xl p-12 flex flex-col items-center gap-3 cursor-pointer transition-colors hover:border-indigo-400 hover:bg-indigo-50/30"
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onClick={open}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }}
+      className={
+        'rounded-xl border-2 border-dashed bg-[var(--surface)] flex flex-col items-center justify-center ' +
+        'text-center gap-4 py-20 px-6 transition-colors duration-200 cursor-pointer ' +
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ' +
+        (isDragging
+          ? 'border-[var(--accent)] bg-[var(--accent-05)]'
+          : 'border-[var(--border)] hover:border-[var(--accent-40)]')
+      }
     >
-      <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-        <svg className="w-6 h-6 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
+      <div className="bg-[var(--bg)] border border-[var(--border)] p-4 rounded-lg">
+        <UploadCloud className="w-8 h-8 text-[var(--accent)]" aria-hidden />
       </div>
-      <div className="text-center">
-        <p className="text-sm font-medium text-gray-700">
-          {label ?? (multiple ? 'Drop PDF files here' : 'Drop a PDF file here')}
-        </p>
-        <p className="text-xs text-gray-400 mt-0.5">or click to browse — PDF only, max 100 MB</p>
-      </div>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        multiple={multiple}
-        onChange={handleChange}
-        className="hidden"
-      />
+      <p className="font-syne font-bold text-xl text-[var(--text-1)]">
+        {label ?? (multiple ? 'Drop your PDFs here' : 'Drop your PDF here')}
+      </p>
+      <p className="text-sm text-[var(--text-2)]">
+        or <span className="text-[var(--accent)] underline-offset-2 hover:underline">browse files</span>
+      </p>
+      <p className="font-mono text-[11px] text-[var(--text-4)]">PDF · up to 100 MB</p>
+      <input ref={inputRef} type="file" accept="application/pdf" multiple={multiple}
+        onChange={handleChange} className="hidden" />
     </div>
   );
 }

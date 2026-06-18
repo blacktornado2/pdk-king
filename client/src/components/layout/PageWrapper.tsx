@@ -6,10 +6,10 @@ interface PageWrapperProps {
 
 export function PageWrapper({ title, description, children }: PageWrapperProps) {
   return (
-    <main className="max-w-3xl mx-auto px-6 py-12">
-      <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{title}</h1>
-      <p className="mt-1 text-gray-500 text-sm">{description}</p>
-      <div className="mt-8">{children}</div>
+    <main className="max-w-3xl mx-auto px-6 lg:px-12 pt-32 pb-24">
+      <h1 className="font-syne font-bold text-4xl text-[var(--text-1)]">{title}</h1>
+      <p className="mt-3 text-[var(--text-2)] text-sm leading-relaxed">{description}</p>
+      <div className="mt-10">{children}</div>
     </main>
   );
 }
