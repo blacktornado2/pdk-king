@@ -4,6 +4,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { UploadZone } from '../components/pdf/UploadZone';
+import { FileCard } from '../components/pdf/FileCard';
+import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
@@ -50,9 +52,6 @@ export function EditPdf() {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { job } = useJobPolling(jobId);
-  const isProcessing = job?.status === 'PENDING' || job?.status === 'PROCESSING';
-  const isDone = job?.status === 'DONE';
-  const isFailed = job?.status === 'FAILED';
 
   useEffect(() => {
     if (!file) { setPages([]); return; }
@@ -180,41 +179,44 @@ export function EditPdf() {
           {!file ? (
             <UploadZone onFiles={(f) => setFile(f[0])} />
           ) : loading ? (
-            <div className="flex items-center gap-2 text-sm text-gray-400 py-12 justify-center">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
+            <div className="flex items-center gap-2 text-sm text-[var(--text-3)] py-12 justify-center">
+              <span className="border-2 border-[var(--border)] border-t-[var(--accent)] rounded-full w-4 h-4 animate-spin" />
               Loading PDF…
             </div>
           ) : page ? (
             <>
+              <FileCard
+                name={file.name}
+                meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+                onRemove={reset}
+              />
+
               {/* Toolbar */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mt-4 mb-3">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                     disabled={currentPage === 0}
-                    className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-md border border-[var(--border)] text-[var(--text-3)] hover:bg-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                     </svg>
                   </button>
-                  <span className="text-xs text-gray-500">
-                    Page {currentPage + 1} of {pages.length}
+                  <span className="text-xs text-[var(--text-3)]">
+                    Page <span className="font-mono">{currentPage + 1}</span> of <span className="font-mono">{pages.length}</span>
                   </span>
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(pages.length - 1, p + 1))}
                     disabled={currentPage === pages.length - 1}
-                    className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-1.5 rounded-md border border-[var(--border)] text-[var(--text-3)] hover:bg-[var(--bg)] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                   </button>
                 </div>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-[var(--text-4)]">
                   {editCount > 0
                     ? `${editCount} edit${editCount !== 1 ? 's' : ''} — hover text to edit`
                     : 'Hover over text to edit'}
@@ -222,7 +224,7 @@ export function EditPdf() {
               </div>
 
               {/* Page canvas with text overlays */}
-              <div className="overflow-auto rounded-lg border border-gray-200 bg-gray-100">
+              <div className="overflow-auto rounded-lg border border-[var(--border)] bg-[var(--bg)]">
                 <div style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
                   <img
                     src={page.imageUrl}
@@ -304,7 +306,7 @@ export function EditPdf() {
                 </div>
               </div>
 
-              {uploadError && <p className="mt-3 text-sm text-red-500">{uploadError}</p>}
+              {uploadError && <p className="mt-3 font-mono text-sm text-[#EF4444]">{uploadError}</p>}
 
               <div className="mt-5 flex gap-3">
                 <Button
@@ -321,47 +323,17 @@ export function EditPdf() {
         </>
       )}
 
-      {jobId && (
-        <div className="flex flex-col items-center gap-4 py-10 text-center">
-          {isProcessing && (
-            <>
-              <svg className="animate-spin h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-              </svg>
-              <p className="text-sm text-gray-500">Applying edits…</p>
-            </>
-          )}
-
-          {isDone && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-gray-900">PDF edited!</p>
-              <div className="flex gap-3">
-                <a href={jobsApi.downloadUrl(jobId)}>
-                  <Button>Download PDF</Button>
-                </a>
-                <Button variant="ghost" onClick={reset}>Edit another</Button>
-              </div>
-            </>
-          )}
-
-          {isFailed && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <p className="text-sm text-red-500">{job?.errorMsg ?? 'Something went wrong.'}</p>
-              <Button variant="ghost" onClick={reset}>Try again</Button>
-            </>
-          )}
-        </div>
+      {jobId && job && (
+        <ResultPanel
+          status={job.status}
+          processingLabel="Saving your edits..."
+          doneLabel="PDF edited!"
+          downloadUrl={jobsApi.downloadUrl(jobId)}
+          downloadLabel="Download PDF"
+          resetLabel="Edit another"
+          onReset={reset}
+          errorMsg={job.errorMsg}
+        />
       )}
     </PageWrapper>
   );
