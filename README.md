@@ -10,23 +10,25 @@ An npm **workspaces monorepo** with two apps:
 
 ```
 pdf-king/
-├── client/   # React 19 + Vite + TypeScript + TailwindCSS + React Router v7
+├── client/   # React 19 + Vite + TypeScript + TailwindCSS v4 + React Router v7
 ├── server/   # NestJS + Prisma + BullMQ
 └── plan.md   # Full project plan and roadmap
 ```
 
-| Layer        | Tech                                              |
-|--------------|---------------------------------------------------|
-| Frontend     | React 19, Vite, TypeScript, TailwindCSS, Zustand  |
-| Icons        | lucide-react                                      |
-| Backend      | NestJS, TypeScript                                |
-| ORM / DB     | Prisma + PostgreSQL                               |
-| Queue        | BullMQ + Redis                                    |
-| PDF engines  | pdf-lib, qpdf (CLI), ghostscript (CLI), pdfjs-dist |
+| Layer        | Tech                                                        |
+|--------------|--------------------------------------------------------------|
+| Frontend     | React 19, Vite, TypeScript, TailwindCSS v4, framer-motion, Zustand |
+| Icons        | lucide-react                                                |
+| Backend      | NestJS, TypeScript                                          |
+| ORM / DB     | Prisma + PostgreSQL                                         |
+| Queue        | BullMQ + Redis                                              |
+| PDF engines  | pdf-lib, qpdf (CLI), ghostscript (CLI), pdfjs-dist           |
 
 Each PDF operation is queued as a `Job` (Postgres), processed by a BullMQ worker,
 and the output is served back for download. See [CLAUDE.md](CLAUDE.md) for the full
-architecture, conventions, and design system.
+architecture and conventions. The UI follows the "Dark Refined" design system in
+[pdf-king-design-system.md](pdf-king-design-system.md) — dark-first canvas, a
+switchable accent (6 options), and light/dark mode, both togglable from the footer.
 
 ## Prerequisites
 
