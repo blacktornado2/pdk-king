@@ -6,6 +6,7 @@ import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 type Format = 'jpeg' | 'png';
 
@@ -52,7 +53,7 @@ export function PdfToImages() {
             <>
               <FileCard
                 name={file.name}
-                meta={`${(file.size / 1024).toFixed(1)} KB`}
+                meta={formatBytes(file.size)}
                 onRemove={() => setFile(null)}
               />
 

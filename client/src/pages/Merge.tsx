@@ -6,6 +6,7 @@ import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 export function Merge() {
   const [files, setFiles] = useState<File[]>([]);
@@ -55,7 +56,7 @@ export function Merge() {
                 <FileCard
                   key={i}
                   name={f.name}
-                  meta={`${(f.size / 1024 / 1024).toFixed(1)} MB`}
+                  meta={formatBytes(f.size)}
                   onRemove={() => removeFile(i)}
                 />
               ))}

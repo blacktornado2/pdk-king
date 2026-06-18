@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { usePdfThumbnails } from '../hooks/usePdfThumbnails';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 type Degrees = 90 | 180 | 270;
 
@@ -82,7 +83,7 @@ export function Rotate() {
             <>
               <FileCard
                 name={file.name}
-                meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+                meta={formatBytes(file.size)}
                 onRemove={() => { setFile(null); setSelected(new Set()); }}
               />
 

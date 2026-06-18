@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi, type SplitMode } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 const MODES: { id: SplitMode; label: string; description: string }[] = [
   { id: 'EXTRACT', label: 'Extract pages', description: 'Pick specific pages — outputs a single PDF' },
@@ -77,7 +78,7 @@ export function Split() {
           ) : (
             <FileCard
               name={file.name}
-              meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+              meta={formatBytes(file.size)}
               onRemove={() => setFile(null)}
             />
           )}

@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { usePdfThumbnails } from '../hooks/usePdfThumbnails';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 export function Extract() {
   const [file, setFile] = useState<File | null>(null);
@@ -71,7 +72,7 @@ export function Extract() {
             <>
               <FileCard
                 name={file.name}
-                meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+                meta={formatBytes(file.size)}
                 onRemove={() => { setFile(null); setSelected(new Set()); }}
               />
 

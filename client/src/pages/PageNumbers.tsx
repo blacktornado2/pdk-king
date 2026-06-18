@@ -7,6 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 type Position = 'bottom-center' | 'bottom-left' | 'bottom-right' | 'top-center' | 'top-left' | 'top-right';
 
@@ -72,7 +73,7 @@ export function PageNumbers() {
             <>
               <FileCard
                 name={file.name}
-                meta={`${(file.size / 1024).toFixed(1)} KB`}
+                meta={formatBytes(file.size)}
                 onRemove={() => setFile(null)}
               />
 

@@ -9,6 +9,7 @@ import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.mjs',
@@ -187,7 +188,7 @@ export function EditPdf() {
             <>
               <FileCard
                 name={file.name}
-                meta={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+                meta={formatBytes(file.size)}
                 onRemove={reset}
               />
 

@@ -6,6 +6,7 @@ import { ResultPanel } from '../components/pdf/ResultPanel';
 import { Button } from '../components/ui/Button';
 import { useJobPolling } from '../hooks/useJobPolling';
 import { pdfApi, jobsApi } from '../services/api';
+import { formatBytes } from '../lib/format';
 
 type Quality = 'low' | 'medium' | 'high';
 
@@ -14,12 +15,6 @@ const QUALITY_OPTIONS: { id: Quality; label: string; description: string; tag: s
   { id: 'medium', label: 'Medium quality', description: '150 dpi — good balance of size and readability',   tag: 'Recommended' },
   { id: 'high',   label: 'High quality',   description: '300 dpi — light compression, good for printing',   tag: 'Best quality' },
 ];
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
 
 export function Compress() {
   const [file, setFile] = useState<File | null>(null);
