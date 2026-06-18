@@ -4,6 +4,18 @@ A web app for PDF management — merge, split, reorder, compress, unlock, protec
 rotate, extract, convert to images, watermark, page numbers, metadata editing, and
 text editing. Built incrementally, one tool at a time.
 
+![PDF King home page](docs/screenshots/home.png)
+
+<p>
+  <img src="docs/screenshots/merge.png" width="32%" alt="Merge PDFs" />
+  <img src="docs/screenshots/split.png" width="32%" alt="Split PDF" />
+  <img src="docs/screenshots/compress.png" width="32%" alt="Compress PDF" />
+</p>
+<p>
+  <img src="docs/screenshots/reorder.png" width="32%" alt="Reorder pages" />
+  <img src="docs/screenshots/watermark.png" width="32%" alt="Add watermark" />
+</p>
+
 ## Architecture
 
 An npm **workspaces monorepo** with two apps:
